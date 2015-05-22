@@ -7,21 +7,47 @@ isInString() {
 }
 
 status() {
-	# Get 'git status -s' with colors :)
-	filelines=$(script -q /dev/null git status -s | cat)
-	
-	oldIFS="$IFS"
-	IFS='
-	'
-	IFS=${IFS:0:1} # this is useful to format your code with tabs
-	lines=( $filelines )
-	IFS="$oldIFS"
+  # Get 'git status -s' with colors :)
+  filelines=$(script -q /dev/null git status -s | cat)
+  
+  oldIFS="$IFS"
+  IFS='
+  '
+  IFS=${IFS:0:1} # this is useful to format your code with tabs
+  lines=( $filelines )
+  IFS="$oldIFS"
 
   for index in "${!lines[@]}"
   do
-  		diplay_idex=$(($index + 1))
-    	echo "$diplay_idex ${lines[index]}"
+      diplay_idex=$(($index + 1))
+      echo "$diplay_idex ${lines[index]}"
   done
+}
+
+diff() {
+  filelines=$(git status -s | cut -c 4-) 
+
+  oldIFS="$IFS"
+  IFS='
+  '
+  IFS=${IFS:0:1} # this is useful to format your code with tabs
+  lines=( $filelines )
+  IFS="$oldIFS"
+
+  for index in "${!lines[@]}"
+  do
+    diplay_idex=$(($index + 1))
+    if isInString $1 $diplay_idex 
+    then
+        git diff ${lines[index]}
+      fi
+  done
+}
+
+commit() {
+  read -p "Message: " message
+
+  git commit -m "$message"
 }
 
 add() {
@@ -38,13 +64,23 @@ add() {
 
   for index in "${!lines[@]}"
   do
-  	diplay_idex=$(($index + 1))
+    diplay_idex=$(($index + 1))
     if isInString $filesToAdd $diplay_idex 
     then
         echo "$diplay_idex ${lines[index]}"
         git add ${lines[index]}
       fi
   done
+}
+
+function glog {
+  num_commits=10
+  if [ -n "$1" ] 
+  then
+    num_commits=$1
+  fi
+
+  git log -n $num_commits --graph --abbrev-commit --decorate --format=format:' %C(bold yellow)%an%C(reset) - %C(bold green)%ar%C(reset)%C(bold blue)%d%C(reset)%n''  %C(black)%s%C(reset)' --all
 }
 
 function parse_git_branch {
@@ -72,12 +108,17 @@ PS1="\W$GREEN\$(parse_git_branch)$DEFAULT> "
 
 function cdi {
    echo "Going to SocialCondo iOS"
-   cd; cd socialcondo
+   cd; cd SocialCondoiOS
 }
 
 function cdw {
    echo "Going to SocialCondo web"
-   cd; cd scw
+   cd; cd SocialCondoWeb
+}
+
+function cda {
+   echo "Going to SocialCondo android"
+   cd; cd SocialCondoAndroid
 }
 
 proml
@@ -90,5 +131,3 @@ nvm use 0.10
 alias top="top -o cpu"
 alias demo="ssh 'root@162.243.91.105'"
 alias prod="ssh -i ~/Documents/socialcondo/sc_key.pem ubuntu@54.232.246.181"
-
-alias log="git log -n 10 --graph --abbrev-commit --decorate --format=format:' %C(bold yellow)%an%C(reset) - %C(bold green)%ar%C(reset)%C(bold blue)%d%C(reset)%n''  %C(black)%s%C(reset)' --all"
