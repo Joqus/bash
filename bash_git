@@ -7,20 +7,20 @@ isInString() {
 }
 
 status() {
-	# Get 'git status -s' with colors :)
-	filelines=$(script -q /dev/null git status -s | cat)
-	
-	oldIFS="$IFS"
-	IFS='
-	'
-	IFS=${IFS:0:1} # this is useful to format your code with tabs
-	lines=( $filelines )
-	IFS="$oldIFS"
+  # Get 'git status -s' with colors :)
+  filelines=$(script -q /dev/null git status -s | cat)
+  
+  oldIFS="$IFS"
+  IFS='
+  '
+  IFS=${IFS:0:1} # this is useful to format your code with tabs
+  lines=( $filelines )
+  IFS="$oldIFS"
 
   for index in "${!lines[@]}"
   do
-  		diplay_idex=$(($index + 1))
-    	echo "$diplay_idex ${lines[index]}"
+      diplay_idex=$(($index + 1))
+      echo "$diplay_idex ${lines[index]}"
   done
 }
 
@@ -36,7 +36,7 @@ diff() {
 
   for index in "${!lines[@]}"
   do
-  	diplay_idex=$(($index + 1))
+    diplay_idex=$(($index + 1))
     if isInString $1 $diplay_idex 
     then
         git diff ${lines[index]}
@@ -45,6 +45,11 @@ diff() {
 }
 
 commit() {
+  if [[ $1 == "-a" ]]
+  then
+    add
+  fi
+
   read -p "Message: " message
 
   git commit -m "$message"
@@ -62,18 +67,27 @@ add() {
   lines=( $filelines )
   IFS="$oldIFS"
 
+  oldIFS="$IFS"
+  IFS=","
+  files=( $filesToAdd )
+  IFS="$oldIFS"
+
   for index in "${!lines[@]}"
   do
-  	diplay_idex=$(($index + 1))
-    if isInString $filesToAdd $diplay_idex 
-    then
-        echo "$diplay_idex ${lines[index]}"
-        git add ${lines[index]}
-      fi
+    diplay_idex=$(($index + 1))
+
+    for fileIndex in "${!files[@]}"
+    do
+      if [ "$diplay_idex" == "${files[fileIndex]}" ]
+        then
+          echo "$diplay_idex ${lines[index]}"
+          git add ${lines[index]}
+        fi
+    done
   done
 }
 
-function glog {
+function log {
   num_commits=10
   if [ -n "$1" ] 
   then
