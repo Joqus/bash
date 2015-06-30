@@ -8,7 +8,7 @@ isInString() {
 
 status() {
   # Get 'git status -s' with colors :)
-  filelines=$(script -q /dev/null git status -s | cat)
+  filelines=$(git status -s | cat)
   
   oldIFS="$IFS"
   IFS='
@@ -19,8 +19,8 @@ status() {
 
   for index in "${!lines[@]}"
   do
-      diplay_idex=$(($index + 1))
-      echo "$diplay_idex ${lines[index]}"
+      diplay_index=$(($index + 1))
+      echo "$diplay_index ${lines[index]}"
   done
 }
 
@@ -36,10 +36,30 @@ diff() {
 
   for index in "${!lines[@]}"
   do
-    diplay_idex=$(($index + 1))
-    if isInString $1 $diplay_idex 
+    diplay_index=$(($index + 1))
+    if isInString $1 $diplay_index 
     then
         git diff ${lines[index]}
+      fi
+  done
+}
+
+checkout() {
+  filelines=$(git status -s | cut -c 4-) 
+
+  oldIFS="$IFS"
+  IFS='
+  '
+  IFS=${IFS:0:1} # this is useful to format your code with tabs
+  lines=( $filelines )
+  IFS="$oldIFS"
+
+  for index in "${!lines[@]}"
+  do
+    diplay_index=$(($index + 1))
+    if isInString $1 $diplay_index 
+    then
+        git checkout ${lines[index]}
       fi
   done
 }
@@ -74,13 +94,13 @@ add() {
 
   for index in "${!lines[@]}"
   do
-    diplay_idex=$(($index + 1))
+    diplay_index=$(($index + 1))
 
     for fileIndex in "${!files[@]}"
     do
-      if [ "$diplay_idex" == "${files[fileIndex]}" ]
+      if [ "$diplay_index" == "${files[fileIndex]}" ]
         then
-          echo "$diplay_idex ${lines[index]}"
+          echo "$diplay_index ${lines[index]}"
           git add ${lines[index]}
         fi
     done
